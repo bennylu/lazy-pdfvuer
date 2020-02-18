@@ -1,15 +1,23 @@
 <template>
   <div v-if="pdfdata">
     <template v-for="i in numPages">
-      <template v-if="i < 10">
-        <pdfvuer :src="pdfdata" :page="i" :key="'page' + i" :id="i"></pdfvuer>
+      <template
+        v-if="i >= currentPage - Number(offscreenPages) && i <= currentPage + Number(offscreenPages)"
+      >
+        <pdfvuer class="page" :style="pageStyle" :src="pdfdata" :page="i" :key="i" :id="i"></pdfvuer>
       </template>
       <template v-else>
-        <div :key="'page' + i" :id="i">haha</div>
+        <div class="page" :style="pageStyle" :key="i" :id="i"></div>
       </template>
     </template>
   </div>
 </template>
+
+<style scoped>
+.page {
+  margin-bottom: 20px;
+}
+</style>
  
 <script>
 import pdfvuer from "pdfvuer";
@@ -19,52 +27,60 @@ export default {
     pdfvuer
   },
   props: {
-    path: String
+    path: String,
+    offscreenPages: String
   },
   data: function() {
     return {
       pdfdata: undefined,
-      page: 0,
       currentPage: 1,
-      numPages: 0
+      numPages: 0,
+      pageHeight: 0
     };
+  },
+  computed: {
+    pageStyle: function() {
+      if (this.pageHeight == 0) return "";
+      return "height: " + this.pageHeight + "px";
+    }
   },
   mounted: function() {
     this.pdfdata = pdfvuer.createLoadingTask(this.path);
     this.pdfdata.then(pdf => {
+      let self = this;
       this.numPages = pdf.numPages;
+      self.$emit("numPages", this.numPages);
+      self.$emit("pageChanged", 1);
 
       window.onscroll = function() {
         changePage();
       };
 
-      let self = this;
-
-      function findPos(obj) {
-        return obj.offsetTop;
-      }
-
       function changePage() {
-        var i = 1,
-          count = Number(pdf.numPages);
+        let yOffset = window.pageYOffset;
+        let previousPage = self.currentPage;
+        let i = 1;
 
         do {
-          if (
-            window.pageYOffset >= findPos(document.getElementById(i)) &&
-            window.pageYOffset <= findPos(document.getElementById(i + 1))
-          ) {
-            self.page = i;
+          if (yOffset >= document.getElementById(i).offsetTop
+              && yOffset <= document.getElementById(i + 1).offsetTop) {
+            self.currentPage = i;
           }
-          i++;
-        } while (i < count);
+        } while (++i < self.numPages);
 
-        if (window.pageYOffset >= findPos(document.getElementById(i))) {
-          self.page = i;
-        }
+        if (yOffset >= document.getElementById(i).offsetTop)
+          self.currentPage = i;
 
-        console.log(self.page);
+        if (self.currentPage != previousPage)
+          self.$emit("pageChanged", i);
+
+        if (self.pageHeight == 0)
+          self.pageHeight = document.getElementById(self.currentPage).offsetHeight;
       }
     });
+  },
+  beforeDestroy: function() {
+    this.pdfdata = undefined;
   }
 };
 </script>
