@@ -1,5 +1,5 @@
 Sample code
-```
+```javascript
 <template>
   <LazyPdfVuer
     path="./sample.pdf"
