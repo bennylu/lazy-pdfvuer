@@ -1,24 +1,28 @@
-# lazy-pdfvuer
+Sample code
+```
+<template>
+  <LazyPdfVuer
+    path="./sample.pdf"
+    offscreenPages="1"
+    v-on:pageChanged="onPageChanged"
+    v-on:numPages="onNumPages"
+  />
+</template>
 
-## Project setup
+<script>
+import LazyPdfVuer from "./components/LazyPdfVuer.vue";
+export default {
+  components: {
+    LazyPdfVuer
+  },
+  methods: {
+    onNumPages(pages) {
+      console.log("Num pages", pages);
+    },
+    onPageChanged(page) {
+      console.log("Page", page);
+    }
+  }
+};
+</script>
 ```
-yarn install
-```
-
-### Compiles and hot-reloads for development
-```
-yarn serve
-```
-
-### Compiles and minifies for production
-```
-yarn build
-```
-
-### Lints and fixes files
-```
-yarn lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
