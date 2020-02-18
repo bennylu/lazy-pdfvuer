@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "core-js": "^3.6.4",
+    "pdfvuer": "^1.4.0",
     "vue": "^2.6.11"
   },
   "devDependencies": {
