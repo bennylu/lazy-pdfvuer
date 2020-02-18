@@ -1,10 +1,5 @@
 <template>
-  <LazyPdfVuer
-    path="./sample.pdf"
-    offscreenPages="1"
-    v-on:pageChanged="onPageChanged"
-    v-on:numPages="onNumPages"
-  />
+  <LazyPdfVuer path="./sample.pdf" offscreenPages="1" v-on:pageChanged="onPageChanged" />
 </template>
 
 <script>
@@ -15,11 +10,8 @@ export default {
     LazyPdfVuer
   },
   methods: {
-    onNumPages(pages) {
-      console.log("Num pages", pages);
-    },
-    onPageChanged(page) {
-      console.log("Page", page);
+    onPageChanged({ currentPage, numPages }) {
+      console.log("Page", currentPage + "/" + numPages);
     }
   }
 };

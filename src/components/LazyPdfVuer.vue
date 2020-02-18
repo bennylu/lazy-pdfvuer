@@ -49,8 +49,10 @@ export default {
     this.pdfdata.then(pdf => {
       let self = this;
       this.numPages = pdf.numPages;
-      self.$emit("numPages", this.numPages);
-      self.$emit("pageChanged", 1);
+      self.$emit("pageChanged", {
+        currentPage: 1,
+        numPages: this.numPages
+      });
 
       window.onscroll = function() {
         changePage();
@@ -62,8 +64,10 @@ export default {
         let i = 1;
 
         do {
-          if (yOffset >= document.getElementById(i).offsetTop
-              && yOffset <= document.getElementById(i + 1).offsetTop) {
+          if (
+            yOffset >= document.getElementById(i).offsetTop &&
+            yOffset <= document.getElementById(i + 1).offsetTop
+          ) {
             self.currentPage = i;
           }
         } while (++i < self.numPages);
@@ -72,7 +76,10 @@ export default {
           self.currentPage = i;
 
         if (self.currentPage != previousPage)
-          self.$emit("pageChanged", i);
+          self.$emit("pageChanged", {
+            currentPage: self.currentPage,
+            numPages: self.numPages
+          });
 
         if (self.pageHeight == 0)
           self.pageHeight = document.getElementById(self.currentPage).offsetHeight;
