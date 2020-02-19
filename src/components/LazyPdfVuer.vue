@@ -1,9 +1,7 @@
 <template>
   <div v-if="pdfdata">
     <template v-for="i in numPages">
-      <template
-        v-if="i >= currentPage - Number(offscreenPages) && i <= currentPage + Number(offscreenPages)"
-      >
+      <template v-if="i >= currentPage - Number(offscreenPages) && i <= currentPage + Number(offscreenPages)">
         <pdfvuer class="page" :style="pageStyle" :src="pdfdata" :page="i" :key="i" :id="i"></pdfvuer>
       </template>
       <template v-else>
@@ -27,7 +25,7 @@ export default {
     pdfvuer
   },
   props: {
-    path: String,
+    options: Object,
     offscreenPages: String
   },
   data: function() {
@@ -45,29 +43,30 @@ export default {
     }
   },
   mounted: function() {
-    this.pdfdata = pdfvuer.createLoadingTask(this.path);
+    console.log(this.options);
+    this.pdfdata = pdfvuer.createLoadingTask(this.options);
     this.pdfdata.then(pdf => {
       let self = this;
       this.numPages = pdf.numPages;
+
       self.$emit("pageChanged", {
         currentPage: 1,
         numPages: this.numPages
       });
 
-      window.onscroll = function() {
+      window.addEventListener("scroll", function() {
         changePage();
-      };
+      }, true);
 
       function changePage() {
         let yOffset = window.pageYOffset;
+        // let yOffset = document.getElementsByClassName("content-container")[0].scrollTop;
         let previousPage = self.currentPage;
         let i = 1;
 
         do {
-          if (
-            yOffset >= document.getElementById(i).offsetTop &&
-            yOffset <= document.getElementById(i + 1).offsetTop
-          ) {
+          if (yOffset >= document.getElementById(i).offsetTop
+              && yOffset <= document.getElementById(i + 1).offsetTop) {
             self.currentPage = i;
           }
         } while (++i < self.numPages);
@@ -87,7 +86,8 @@ export default {
     });
   },
   beforeDestroy: function() {
-    this.pdfdata = undefined;
+    if (this.pdfdata) this.pdfdata.destroy();
+    this.pdfdata = null;
   }
 };
 </script>
