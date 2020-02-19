@@ -1,11 +1,11 @@
 <template>
   <div v-if="pdfdata">
     <template v-for="i in numPages">
-      <template v-if="i >= currentPage - Number(offscreenPages) && i <= currentPage + Number(offscreenPages)">
-        <pdfvuer class="page" :style="pageStyle" :src="pdfdata" :page="i" :key="i" :id="i"></pdfvuer>
+      <template v-if="loaded.indexOf(i) >= 0 || (i >= currentPage - Number(offscreenPages) && i <= currentPage + Number(offscreenPages))">
+        <pdfvuer class="page" :style="pageStyle" :src="pdfdata" :page="i" :key="i" :id="i" :ref="'ref' + i"></pdfvuer>
       </template>
       <template v-else>
-        <div class="page" :style="pageStyle" :key="i" :id="i"></div>
+        <div class="page" :style="pageStyle" :key="i" :id="i" :ref="'ref' + i"></div>
       </template>
     </template>
   </div>
@@ -31,6 +31,7 @@ export default {
   data: function() {
     return {
       pdfdata: undefined,
+      loaded: [],
       currentPage: 1,
       numPages: 0,
       pageHeight: 0
@@ -43,11 +44,13 @@ export default {
     }
   },
   mounted: function() {
-    console.log(this.options);
     this.pdfdata = pdfvuer.createLoadingTask(this.options);
     this.pdfdata.then(pdf => {
       let self = this;
       this.numPages = pdf.numPages;
+
+      for (let i = this.currentPage; i <= this.currentPage + Number(this.offscreenPages); i++)
+        this.loaded.push(i);
 
       self.$emit("pageChanged", {
         currentPage: 1,
@@ -79,6 +82,10 @@ export default {
             currentPage: self.currentPage,
             numPages: self.numPages
           });
+
+        for (let j = self.currentPage - Number(self.offscreenPages); j <= self.currentPage + Number(self.offscreenPages); j++) {
+          if (self.loaded.indexOf(j) < 0) self.loaded.push(j);
+        }
 
         if (self.pageHeight == 0)
           self.pageHeight = document.getElementById(self.currentPage).offsetHeight;
